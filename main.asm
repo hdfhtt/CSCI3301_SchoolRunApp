@@ -1,3 +1,9 @@
+# School Run App
+# for CSCI 3301 Section 2 Semester 2 21/22
+# Group Members:
+# 1. Muhammad Hadif Bin Mohd Hatta (2114589)
+# 2. Sanoh Ahmad (1921973)
+
 .data
 	dlg_plate_no: .asciiz "Plate Sensor Input: (max 8 characters)"
 	dlg_route_detect: .asciiz "Route Detection:\n[ YES ] DROPOFF LANE\n[ NO ] PICKUP LANE"
