@@ -1,18 +1,21 @@
 .data
 	dlg_plate_no: .asciiz "Plate Sensor Input: (max 8 characters)"
 	dlg_route_detect: .asciiz "Route Detection:\n[ YES ] DROPOFF LANE\n[ NO ] PICKUP LANE"
-	dlg_dropoff: .asciiz "A vehicle has dropped off the student(s). Student attendance has been updated."
 	
 	dlg_restart: .asciiz "Scanning for a new vehicle..."
 	dlg_debug_continue: .asciiz "(Debug) Do you wish to continue?"
 	
 	dlg_pickup: .asciiz "A vehicle has arrived in the pickup lane. Is the student(s) for that vehicle ready?"
 	dlg_pickup2: .asciiz "A vehicle is waiting in the waiting lane. Is the student(s) for that vehicle ready?"
-	dlg_pickup_wait: .asciiz "Alert the vehicle to stay in the waiting lane. Waiting for the student(s) to be ready..."
-	dlg_pickup_success: .asciiz "The vehicle has successfully pickup the student(s). Student waitlist has been updated."
+	dlg_pickup_alert: .asciiz "Alert the vehicle to stay in the waiting lane. Waiting for the student(s) to be ready..."
 	
-	system_log1: .asciiz "LOG: A vehicle with plate no. of "
-	system_log2: .asciiz " is arriving...\n"
+	dlg_success_dropoff: .asciiz "A vehicle has dropped off the student(s). Student attendance has been updated."
+	dlg_success_pickup: .asciiz "The vehicle has successfully pickup the student(s). Student waitlist has been updated."
+	
+	system_log: .asciiz "LOG: A vehicle with plate no. of "
+	system_log_arrive: .asciiz " is arriving...\n"
+	system_log_dropoff: .asciiz " has dropped off the student(s).\n"
+	system_log_pickup: .asciiz " has pickup the student(s).\n"
 	
 	plate_no: .space 9			# Space reserved for 8 characters and 1 null-terminator
 
@@ -39,20 +42,8 @@ main:
 		# and start scanning for a new vehicle (app_restart)
 		bnez $a1, app_restart
 		
-		# Display the first part of the message
-		li $v0, 4
-		la $a0, system_log1
-		syscall
-		
-		# Display plate no as the second part of the message
-		li $v0, 4
-		la $a0, plate_no
-		syscall
-		
-		# Display the third part of the message
-		li $v0, 4
-		la $a0, system_log2
-		syscall
+		la $a0, system_log_arrive	# Set the content of $a0 to system_log_arrive
+		jal print_log			# Call print_log function
 		
 		# Sensor2: Vehicle Routing Sensor
 		li $v0, 50			# Call ConfirmDialog function
@@ -85,14 +76,18 @@ main:
 			bnez $a0, point_pickup_wait
 			
 			li $v0, 55		# Call MessageDialog function
-			la $a0, dlg_pickup_success
+			la $a0, dlg_success_pickup # Load dlg_success_pickup as the message
+			li $a1, 1		# Set the type of message to 1 (information)
 			syscall
+			
+			la $a0, system_log_pickup # Set the content of $a0 to system_log_pickup
+			jal print_log		# Call the print_log function
 			
 			j app_debug_continue	# Jump to app_debug_continue
 		
 		point_pickup_wait:
 			li $v0, 55		# Call MessageDialog function
-			la $a0, dlg_pickup_wait	# Load dlg_pickup_wait as the message
+			la $a0, dlg_pickup_alert# Load dlg_pickup_wait as the message
 			li $a1, 1		# Set the type of message to 1 (information)
 			syscall
 			
@@ -102,9 +97,12 @@ main:
 		
 		point_dropoff:
 			li $v0, 55		# Call MessageDialog function
-			la $a0, dlg_dropoff	# Load dlg_dropoff as the message
+			la $a0, dlg_success_dropoff # Load dlg_success_dropoff as the message
 			li $a1, 1		# Set the type of message to 1 (information)
 			syscall
+			
+			la $a0, system_log_dropoff # Set the content of $a0 to system_log_dropoff
+			jal print_log		# Call print_log function
 			
 	app_debug_continue:
 		li $v0, 50			# Call ConfirmDialog function
@@ -118,3 +116,22 @@ main:
 	app_exit:
 		li $v0, 10			# Call exit function
 		syscall
+
+# print_log($a0: message address)
+print_log:
+	move $s1, $a0				# Move content from argument $a0 to $s1
+	
+	li $v0, 4				# Call print function
+	la $a0, system_log			# Load system_log as the first part of the message
+	syscall
+	
+	li $v0, 4				# Call print function
+	la $a0, plate_no			# Load plate_no as the second part of the message
+	syscall
+	
+	li $v0, 4				# Call print function
+	la $a0, ($s1)				# Load $s1 as the third part of the message
+	syscall
+	
+	jr $ra					# Return
+	
