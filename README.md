@@ -1,4 +1,5 @@
 # CSCI 3301: School Run App
+<p align='justify'><b>School Run App</b> is a MIPS assembly project for CSCI 3301: <i>Computer Architecture & Assembly Language</i> and it was assigned by our instructor, <b>Ts. Dr. Hafizah Binti Mansor.</b></p>
 
 ### Group Members
 | No. | Name  | Matric No |
